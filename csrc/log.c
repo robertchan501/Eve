@@ -26,8 +26,8 @@ static void commit_complete(commitlog log)
     }
 }
 
-static CONTINUATION_1_1(log_commit, commitlog, edb);
-static void log_commit(commitlog log, edb source)
+static CONTINUATION_1_4(log_prepare, commitlog, edb, edb, ticks, commit_handler);
+static void log_prepare(commitlog log, edb source, edb remove, ticks t, commit_handler x)
 {
     boolean start = !buffer_length(log->stage) && !buffer_length(log->writing);
 
@@ -52,7 +52,7 @@ bag start_log(bag base, char *filename)
 {
     heap h = allocate_rolling(pages, sstring("log working"));
     commitlog log = allocate(h, sizeof(struct commitlog));
-    log->b.commit = cont(h, log_commit, log);
+    log->b.prepare = cont(h, log_prepare, log);
     log->b.scan = base->scan;
     log->b.listeners = base->listeners;
 

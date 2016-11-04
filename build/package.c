@@ -1,10 +1,22 @@
 #include <unix_internal.h>
+#include <bswap.h>
+
+table object_map; 
+heap working;
+buffer out;
 
 static char hex_digit[]={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-static inline void bwrite(byte x)
+
+static void owrite(byte *x, bytes length)
 {
     // add buffering
-    write(1, &x, 1);
+    write(1, x, length);
+}
+
+
+static inline void bwrite(byte x)
+{
+    owrite(&x, 1);
 }
 
 
@@ -30,7 +42,7 @@ static inline void encode_integer(int offset, byte base, u64 value)
 static void write_string(char *body, int length)
 {
     encode_integer(2, 0x40, length);
-    write(1, body, length);
+    owrite(body, length);
 }
 
 extern char *pathroot;
@@ -67,26 +79,36 @@ static void include_file(char *name, int length)
 
 void *memset(void *b, int c, size_t len);
 
+static u64 uuid_count;
+
+// we can start trying to use the proper serializer
 static void write_term(char *x, int length)
 {
     char start = x[0];
-    if (start == '%') {
-        int n = 0, len = 0;
-        for(char *r = x + 1; len < (length - 1); r++, len++)
-            n = (n * 10) + (*r - '0');
 
-        char buf[12];
-        memset(buf, 0, sizeof(buf));
-        buf[0] = 0x80;
-        buf[11] = n; /// xxx - 256
-        write(1, buf, sizeof(buf));
+    if (start == '%') {
+        string s = allocate_buffer(working, length-1);
+        buffer_append(s, x+1, length -1);
+        u8 *key;
+        if (!(key = table_find(object_map, s))) {
+            key = allocate(working, UUID_LENGTH);
+            memset(key, 0, UUID_LENGTH);
+            u64 id = uuid_count++;
+            id = htonll(id);
+            memcpy(key+UUID_LENGTH-sizeof(u64), &id, sizeof(u64));
+            key[0] |= 0x80;
+            table_set(object_map, s, key);
+        }
+        owrite(key, UUID_LENGTH);
         return;
     }
 
     if (((start >= '0') && (start <= '9')) || (start == '-')) {
-        double d = parse_float(alloca_wrap_buffer(x+1, length -1));
+        double d = parse_float(alloca_wrap_buffer(x, length));
         bwrite(float64_prefix);
-        write(1, &d, sizeof(double));
+        u64 k = *(u64*)&d;
+        k = htonll(k);
+        owrite((u8 *)&k, sizeof(double));
         return;
         // xxx - little endian
     }
@@ -102,10 +124,21 @@ static void write_term(char *x, int length)
 
 int main()
 {
+    // xxx - move to core
+    heap smallpages = init_memory(4096);
+    pthread_key_create(&pkey, 0);
+    primary = init_context(smallpages);
+    pthread_setspecific(pkey, primary);
+
     int fill = 0;
     int comment = 0;
     char term[1024];
     char x;
+
+    working = allocate_rolling(smallpages, sstring("package"));
+    object_map = allocate_table(working, string_hash, string_equal);
+    buffer out = allocate_buffer(working, 1024);
+
     while (read(0, &x, 1) > 0 ) {
         if (x == '#') comment = 1;
 

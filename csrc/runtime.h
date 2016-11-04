@@ -19,49 +19,47 @@ void init_runtime();
 
 void error(char *);
 
-#define UUID_LENGTH 12
-
-uuid generate_uuid();
-
-void uuid_base_print(char *, void *);
-uuid parse_uuid(string c);
 string aprintf(heap h, char *fmt, ...);
 void bbprintf(string b, string fmt, ...);
 
 #define pages (tcontext()->page_heap)
 #define init (tcontext()->h)
 
-typedef struct perf {
-    int count;
-    ticks start;
-    ticks time;
-    int trig;
-} *perf;
+typedef closure(execf, heap, value *);
+typedef closure(flushf);
 
+typedef struct block {
+    heap h;
+    execf head;
+    int regs;
+    table scopes; 
+    bag default_write;
+    vector default_read;
+    vector variables;
+    uuid id;
+} *block;
 
 typedef struct edb *edb;
 
-typedef closure(committer, edb);
+typedef closure(commit, boolean);
+// if prepared is false then commit doens't have to be anything
+typedef closure(commit_handler, commit, boolean);
+
+typedef closure(preparer, edb, edb, ticks, commit_handler);
 typedef closure(listener, value, value, value, uuid);
 typedef closure(scanner, int, listener, value, value, value);
 
 struct bag {
-    //  uuid u; ?
     scanner scan;
-    scanner scan_sync;
-    committer commit;
+    preparer prepare;
     table listeners;
     ticks last_commit;
 };
 
-typedef closure(execf, heap, perf, value *);
-typedef closure(flushf);
 
 #define def(__s, __v, __i)  table_set(__s, intern_string((unsigned char *)__v, cstring_length((char *)__v)), __i);
 
 void print_value(buffer, value);
-
-typedef struct evaluation *evaluation;
 
 static value compress_fat_strings(value v)
 {
@@ -75,74 +73,20 @@ static value compress_fat_strings(value v)
 #include <edb.h>
 #include <multibag.h>
 
-typedef closure(evaluation_result, multibag, multibag, boolean);
 
 typedef closure(error_handler, char *, bag, uuid);
-typedef closure(bag_handler, edb);
-typedef closure(bag_block_handler, bag, vector, vector); // source, inserts, removes
 
 typedef void (*commit_function)(multibag backing, multibag delta, closure(finish, boolean));
 
-struct evaluation  {
-    heap h;
-    int regs;
-    execf head;
-    flushf flush;
-    evaluation ev;
-    table nmap;
-    uuid start;
-    vector cleanup;
-
-    estring name;
-    heap working; // lifetime is a whole f-t pass
-    error_handler error;
-
-    table scopes;
-    // f should be going away
-    multibag t_input;
-    multibag block_t_solution;
-    multibag block_f_solution;
-    multibag f_solution;
-    multibag last_f_solution;
-    multibag t_solution;
-    multibag t_solution_for_f;
-
-    table counters;
-    ticks t;
-    boolean non_empty;
-    evaluation_result complete;
-
-    thunk terminal;
-    thunk run;
-    ticks cycle_time;
-
-    // needs to be set up before build time and resolved there
-    vector default_scan_scopes;
-    vector default_insert_scopes; // really 'session'
-    bag bag_bag;
-    commit_function commit;
-    uuid id;
-};
-
-
-typedef evaluation block;
-
-void execute(evaluation);
-
+extern table functions;
 table builders_table();
-void build(evaluation ev, bag b, uuid root);
+block build(bag b, uuid root);
 table start_fixedpoint(heap, table, table, table);
-void close_evaluation(evaluation);
 
 extern char *pathroot;
 
 bag compile_eve(heap h, buffer b, boolean tracing);
 
-//evaluation build_evaluation(heap h,
-//                            bag source,
-//                            bag block_root);
-
-void run_solver(evaluation s);
 void block_close(block);
 bag init_request_service();
 
@@ -161,19 +105,14 @@ static void get_stack_trace(string *out)
     }
 }
 
-void merge_scan(evaluation ev, vector scopes, int sig, listener result, value e, value a, value v);
-
-
-bag init_debug_bag(evaluation ev);
-bag init_bag_bag(evaluation ev);
+// need the various bits of the evalution
+void merge_scan(vector scopes, int sig, listener result, value e, value a, value v);
 
 typedef struct process_bag *process_bag;
 process_bag process_bag_init(multibag, boolean);
 
 typedef closure(object_handler, edb, uuid);
-object_handler create_json_session(heap h, evaluation ev, endpoint down);
-evaluation process_resolve(process_bag, uuid);
-
+object_handler create_json_session(heap h, bag over, endpoint down);
 
 bag connect_postgres(station s, estring user, estring password, estring database);
 bag env_init();

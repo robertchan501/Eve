@@ -63,6 +63,14 @@ bag staticdb()
     edb e = create_edb(init, 0);
     buffer_handler n = deserialize_into_bag(init, e);
     apply(n, wrap_buffer(init, &db_start, ((u64)&db_end) - ((u64)&db_start)), ignore);
+    buffer dumpy = edb_dump(init, e);
+    write(1, bref(dumpy, 0), buffer_length(dumpy));
+
+    edb_foreach_e(e, id, sym(tag), sym(evaluation)){
+        buffer test = edb_dump_dot(e, id);
+        write(1, bref(test, 0), buffer_length(test));
+    }
+
     return (bag)e;
 }
 
@@ -77,10 +85,6 @@ static void start_http_server(buffer source)
     edb stb = create_edb(h, 0);
     uuid stid = generate_uuid();
     table_set(persisted, stid, stb);
-        
-    //    process_bag pb  = process_bag_init(persisted, enable_tracing);
-    //    uuid pid = generate_uuid();
-    //    table_set(persisted, pid, pb);
 
     bag fb = (bag)filebag_init(sstring(pathroot));
     uuid fid = generate_uuid();
@@ -90,23 +94,14 @@ static void start_http_server(buffer source)
     table_set(persisted, sid, static_bag);
 
     table_set(scopes, sym(file), fid);
-    //    table_set(scopes, sym(process), pid);
     table_set(scopes, sym(static), sid);
-    
 
     heap hc = allocate_rolling(pages, sstring("eval"));
-    //    bag n = compile_eve(h, source, enable_tracing);
-    
-    evaluation ev;
-    //    evaluation ev = build_evaluation(h, n);
-    //    vector_insert(ev->default_scan_scopes, stid);
-    //    vector_insert(ev->default_insert_scopes, stid);
 
     edb in = create_edb(h, 0);
     edb_insert(in, generate_uuid(), sym(tag), sym(initialize), 0);
-    //    inject_event(ev, (bag)in);
 
-    create_http_server(create_station(0, port), ev, 0);
+    create_http_server(create_station(0, port), 0);
     prf("\n----------------------------------------------\n\nEve started. Running at http://localhost:%d\n\n",port);
 }
 
@@ -183,12 +178,10 @@ static void do_db(char *x)
     table_set(scopes, database, p);
 }
 
-
 static void do_recycle(char *x)
 {
     cluster = true;
 }
-
 
 static void do_cluster(char *x)
 {
@@ -339,6 +332,8 @@ int main(int argc, char **argv)
     // depends on uuid layout, package.c, and other fragilizites
     unsigned char fixed_uuid[12] = {0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 
+#if 0
+    // lookup by attr
     uuid percent_one = intern_uuid(fixed_uuid);
     estring static_server = lookupv((edb)static_bag, percent_one, sym(server));
 
@@ -351,7 +346,7 @@ int main(int argc, char **argv)
         cluster_source = wrap_buffer(init, static_membership->body, static_membership->length);
     }
     if (cluster) start_cluster(cluster_source);
-
+#endif
     unix_wait();
 }
 

@@ -1,14 +1,9 @@
 typedef void (*buildf)(block, bag, uuid, execf *, flushf *);
 
-static void exec_error(evaluation e, char *format, ...)
+// we should instantiate an error object - someplace?
+static void exec_error(block b, char *format, ...)
 {
     prf ("error %s\n", format);
-}
-
-// xxx - ok, arms are currently ordered...break that?
-static inline execf resolve_cfg(block bk, uuid n)
-{
-    return table_find(bk->nmap, n);
 }
 
 static boolean isreg(value k)
@@ -35,17 +30,6 @@ static inline estring lookup_string(value *r, value k)
     print_value(out, r);
     // xxx - leave in a non-comparable space and promote only on demand
     return intern_buffer(out);
-}
-
-
-static perf register_perf(evaluation e, uuid n)
-{
-    perf p = allocate(e->h, sizeof(struct perf));
-    p->time = 0;
-    p->count = 0;
-    p->trig = 0;
-    table_set(e->counters, n, p);
-    return p;
 }
 
 static inline void extract(vector dest, vector keys, value *r)
@@ -86,26 +70,5 @@ static inline int reg(value n)
 }
 
 
-
-
-static inline void start_perf(perf p)
-{
-    p->count++;
-    p->start = rdtsc();
-}
-
-static inline void stop_perf(perf p, perf pp)
-{
-    ticks delta = rdtsc() - p->start;
-    if (pp)
-        pp->time -= delta;
-    p->time += delta;
-}
-
-// xxx - there is probably a better way to wire this
-static execf cfg_next(evaluation bk, bag g, uuid n)
-{
-    return(table_find(bk->nmap, blookupv(g, n, sym(next))));
-}
 
 

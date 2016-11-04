@@ -1,14 +1,57 @@
 typedef struct edb *edb;
 
+typedef struct level {
+    // actually, this is redundant with the table count,
+    // but lets keep using this abstraction
+    u64 count;
+    table entries;
+} *level;
 
 struct edb {
     struct bag b;
-    table eav;
-    table ave;
-    int count;
+    level eav;
+    level ave;
     heap h;
+    u64 count;
     vector includes; // an immutable set
 };
+
+static inline level allocate_level(edb e)
+{
+    level out = allocate(e->h, sizeof(struct level));
+    out->count = 0;
+    out->entries = create_value_table(e->h);
+    return out;
+}
+
+static inline value level_find_create(edb e, level current, value key) {
+    level next_level = value_table_find(current->entries, key);
+    if(!next_level) {
+        next_level = allocate_level(e);
+        table_set(current->entries, key, next_level);
+        current->count++;
+    }
+    return next_level;
+}
+
+#define level_foreach(_t, _k, _v)\
+  if (_t) table_foreach(((level)_t)->entries, _k, _v)
+
+#define level_find(_t, _k)\
+    ({\
+      void *x = 0 ;\
+      if (_t) x = value_table_find(((level)_t)->entries, _k);      \
+      x;\
+     })
+
+
+// does this really need to return status?
+static inline boolean level_set(level l, value key, void *x)
+{
+    table_set(l->entries, key, x);
+    l->count++;
+    return true;
+}
 
 typedef struct leaf {
     uuid u;
@@ -16,6 +59,8 @@ typedef struct leaf {
     ticks t;
 } *leaf;
 
+// it may prove advantageous to change this encoding to allow for dont care states
+// in addition to input and output
 #define e_sig 0x04
 #define a_sig 0x02
 #define v_sig 0x01
@@ -34,33 +79,33 @@ void destroy_bag(bag b);
 
 // xxx - these iterators dont account for shadowing
 #define edb_foreach(__b, __e, __a, __v, __block_id)   \
-    table_foreach((__b)->eav, __e, __avl) \
-    table_foreach((table)__avl, __a, __vl)\
-    table_foreach((table)__vl, __v, __cv)\
-    for(uuid __block_id = ((leaf)__cv)->block_id , __p = 0; !__p; __p++)    \
+    level_foreach((__b)->eav, __e, __avl) \
+    level_foreach(__avl, __a, __vl)\
+    level_foreach(__vl, __v, __cv)\
+    for(uuid __block_id = ((leaf)__cv)->block_id , __p = 0; !__p; __p++)    
 
 long count_of(edb b, value e, value a, value v);
 edb create_edb(heap, vector inherits);
 
 #define edb_foreach_av(__b, __e, __a, __v)\
-    for(table __av = (table)table_find((__b)->eav, __e); __av; __av = 0)  \
-    table_foreach((table)__av, __a, __vl)\
-    table_foreach((table)__vl, __v, __cv)\
+    for(level __av = level_find((__b)->eav, __e); __av; __av = 0)  \
+    level_foreach(__av, __a, __vl)\
+    level_foreach(__vl, __v, __cv)
 
 #define edb_foreach_ev(__b, __e, __a, __v)\
-    for(table __avt = (table)table_find((__b)->ave, __a); __avt; __avt = 0)  \
-    table_foreach((table)__avt, __v, __ect)\
-    table_foreach((table)__ect, __e, __cv)\
+    for(level __avt = level_find((__b)->ave, __a); __avt; __avt = 0)  \
+    level_foreach(__avt, __v, __ect)\
+    level_foreach(__ect, __e, __cv)
 
 #define edb_foreach_v(__b, __e, __a, __v)\
-    for(table __av = (table)table_find((__b)->eav, __e); __av; __av = 0)  \
-    for(table __vv = (table)table_find(__av, __a); __vv; __vv = 0)  \
-    table_foreach((table)__vv, __v, __cv)\
+    for(level __av = level_find((__b)->eav, __e); __av; __av = 0)  \
+    for(level __vv = level_find(__av, __a); __vv; __vv = 0)  \
+    level_foreach(__vv, __v, __cv)
 
 #define edb_foreach_e(__b, __e, __a, __v)\
-    for(table __avt = (table)table_find((__b)->ave, __a),\
-               __et = __avt?(table)table_find(__avt, __v):0; __et; __et = 0)   \
-    table_foreach((table)__et, __e, __cv)\
+    for(level __avt = level_find((__b)->ave, __a),\
+              __et = __avt?level_find(__avt, __v):0; __et; __et = 0)   \
+    level_foreach(__et, __e, __cv)
 
 buffer edb_dump(heap, edb);
 
@@ -75,4 +120,5 @@ static inline vector lookup_array(heap h, edb b, uuid e)
     return dest;
 }
 
-void edb_insert(edb, value, value, value, value); //eavb
+boolean edb_insert(edb, value, value, value, value); //eavb
+string edb_dump_dot(edb s, uuid u);

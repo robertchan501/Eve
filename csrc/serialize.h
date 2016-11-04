@@ -40,6 +40,7 @@ static void fill_bag(edb target, value *e, value *a, value v)
     if (!*e) {*e = v; return;}
     if (!*a) {*a = v; return;}
     edb_insert(target, *e, *a, v, 0);
+    prf ("fact! %v %v %v\n", *e, *a, v);
     *e = *a = 0;
 }
 

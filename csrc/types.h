@@ -102,3 +102,8 @@ static inline table create_value_vector_table(heap h)
 {
     return  allocate_table(h, value_vector_as_key, value_vector_equals);
 }
+
+#define UUID_LENGTH 12
+uuid generate_uuid();
+void uuid_base_print(char *, void *);
+uuid parse_uuid(string c);

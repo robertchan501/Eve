@@ -12,8 +12,6 @@ string tree_root_path();
 
 extern heap pages;
 
-typedef closure(status_handler, int);
-
 typedef int descriptor;
 
 extern descriptor standardoutput;

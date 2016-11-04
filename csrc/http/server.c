@@ -4,7 +4,7 @@
 
 struct http_server {
     heap h;
-    evaluation ev;
+    bag b;
     table sessions;
 };
 
@@ -18,7 +18,6 @@ typedef struct session {
     heap h;
     uuid self;
     http_server parent;
-    evaluation ev;
     endpoint e;
 } *session;
 
@@ -126,24 +125,17 @@ static void http_eval_result(http_server s,
 
 
 
-http_server create_http_server(station p, evaluation ev, process_bag pb)
+http_server create_http_server(station p, bag over)
 {
     heap h = allocate_rolling(pages, sstring("server"));
     http_server s = allocate(h, sizeof(struct http_server));
 
     s->h = h;
-    s->ev = ev;
 
     s->sessions = create_value_table(h);
 
     bag sib = (bag)create_edb(h, 0);
     uuid sid = generate_uuid();
-    table_set(ev->t_input, sid, sib);
-    table_set(ev->scopes, sym(server), sid);
-    vector_insert(ev->default_scan_scopes, sid);
-    vector_insert(ev->default_insert_scopes, sid);
-
-    // add a listener for the browser bag
 
     tcp_create_server(h,
                       p,

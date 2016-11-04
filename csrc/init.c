@@ -24,7 +24,7 @@ void init_runtime()
     // bootstrap
     heap trash = init_memory(4096);
 
-
+    // xxx - move to core
     heap page_allocator = init_fixed_page_region(trash, allocation_space, allocation_space + region_size, 65536, false);
     pthread_key_create(&pkey, 0);
     primary = init_context(page_allocator);

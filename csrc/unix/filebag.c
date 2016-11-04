@@ -178,8 +178,8 @@ static void filebag_scan(filebag fb, int sig, listener out, value e, value a, va
 }
 
 
-static CONTINUATION_1_1(filebag_commit, filebag, edb)
-static void filebag_commit(filebag fb, edb s)
+static CONTINUATION_1_4(filebag_prepare, filebag, edb, edb, ticks, commit_handler);
+static void filebag_prepare(filebag fb, edb s, edb remove, ticks t, commit_handler c)
 {
     edb_foreach_ev(s, e, sym(child), v) {
         file parent;
@@ -227,6 +227,6 @@ bag filebag_init(buffer root_pathname)
     fb->root = allocate_file(fb, 0, generate_uuid());
     fb->root->name = intern_buffer(root_pathname);
     fb->b.listeners = allocate_table(h, key_from_pointer, compare_pointer);
-    fb->b.commit = cont(h, filebag_commit, fb);
+    fb->b.prepare = cont(h, filebag_prepare, fb);
     return (bag)fb;
 }

@@ -387,8 +387,8 @@ void postgres_scan(postgres p, int sig, listener out, value e, value a, value v)
     pg_scan_complete(p, sig, out, e, a, v);
 }
 
-static CONTINUATION_1_1(postgres_commit, postgres, edb)
-static void postgres_commit(postgres p, edb s)
+static CONTINUATION_1_4(postgres_prepare, postgres, edb, edb, ticks, commit_handler);
+static void postgres_prepare(postgres p, edb s, edb remove, ticks tick, commit_handler h)
 {
 }
 
@@ -405,7 +405,7 @@ bag connect_postgres(station s, estring user, estring password, estring database
     p->tables = create_value_table(p->h);
     p->table_worklist = allocate_vector(p->h, 10);
     p->b.scan = cont(h, postgres_scan, p);
-    p->b.commit = cont(h, postgres_commit, p);
+    p->b.prepare = cont(h, postgres_prepare, p);
     p->b.listeners = allocate_table(p->h, key_from_pointer, compare_pointer);
     tcp_create_client(h, s, cont(h, postgres_connected, p));
     return (bag)p;

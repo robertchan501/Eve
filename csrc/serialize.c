@@ -1,5 +1,6 @@
 #include <runtime.h>
 #include <serialize.h>
+#include <bswap.h>
 
 typedef struct deserialize {
     closure(handler, value);
@@ -106,8 +107,12 @@ static inline void move(buffer d, buffer s, u64 length)
     s->start += length;
 }
 
-// endian
-static value intern_float(void *x) {return box_float(*(double *)x);}
+static value intern_float(void *x) 
+{
+    u64 k = *(u64 *)x;
+    k = htonll(k);
+    return box_float(*(double *)&k);
+}
 
 static CONTINUATION_1_2(deserialize_input, deserialize, buffer, thunk);
 static void deserialize_input(deserialize d, buffer b, thunk finished)
@@ -171,7 +176,7 @@ static void deserialize_input(deserialize d, buffer b, thunk finished)
             case float64_prefix:
                 d->length = 8;
                 d->translate = intern_float;
-                continue;
+                break;
             case true_constant: apply(d->handler, etrue);  break;
             case false_constant: apply(d->handler, efalse); break;
             default:

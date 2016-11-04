@@ -1,6 +1,23 @@
 typedef table multibag;
 
+#define multibag_foreach_ev(__m, __e, __a, __v)
+
 #define multibag_foreach(__m, __u, __b)  if(__m) table_foreach(__m, __u, __b)
+
+static inline void merge_multibag_bag(heap h, table *d, uuid u, bag s)
+{
+    edb bd;
+    if (!*d) *d = create_value_table(h);
+
+
+    if (!(bd = table_find(*d, u))) {
+        table_set(*d, u, s);
+    } else {
+        edb_foreach((edb)s, e, a, v, bku) {
+            edb_insert(bd, e, a, v, bku);
+        }
+    }
+}
 
 // should these guys really reconcile their differences
 static inline int multibag_count(table m)

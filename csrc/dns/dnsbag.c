@@ -6,8 +6,8 @@ typedef struct dns_bag {
 } *dns_bag;
 
 
-CONTINUATION_1_5(bagbag_scan, evaluation, int, listener, value, value, value);
-void dns_scan(evaluation ev, int sig, listener out, value e, value a, value v)
+CONTINUATION_0_5(dns_scan, int, listener, value, value, value);
+void dns_scan(int sig, listener out, value e, value a, value v)
 {
     if (sig & e_sig) {
     }
