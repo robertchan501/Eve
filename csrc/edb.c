@@ -24,7 +24,7 @@ static void lookup_vector_internal(vector dest, edb b, uuid e, estring a)
     level_foreach(vl, v, terminal)
         vector_insert(dest, v);
 
-    vector_foreach(b->includes, i) 
+    vector_foreach(b->includes, i)
         lookup_vector_internal(dest, i, e, a);
 }
 
@@ -165,14 +165,14 @@ boolean edb_insert(edb b, value e, value a, value v, uuid block_id)
         level_set(avl, e, final);
         b->count++;
         return true;
-    } 
+    }
     return false;
 }
 
 static CONTINUATION_1_4(edb_prepare, edb, edb, edb, ticks, commit_handler);
 static void edb_prepare(edb b, edb add, edb remove, ticks t, commit_handler h)
 {
-    //    edb_foreach(source, e, a, v, block_id) 
+    //    edb_foreach(source, e, a, v, block_id)
     //        edb_insert(b, e, a, v, block_id);
     // activate the listeners
 }
@@ -238,6 +238,24 @@ string edb_dump_dot(edb s, uuid u)
     return out;
 }
 
+
+static void edb_produce(edb e, register r, variable v)
+{
+
+}
+
+static u64 edb_cardinality(edb b, object obj, variable v)
+{
+    if (bound(r, obj->self)) {
+
+    } else {
+        vector_foreach() {
+        }
+        vector_foreach(b) {
+        }
+    }
+}
+
 string edb_dump(heap h, edb b)
 {
     buffer out = allocate_string(h);
@@ -252,10 +270,9 @@ string edb_dump(heap h, edb b)
             int start = buffer_length(out);
             bprintf(out, "%S%v ", first++?ind:0, a);
             int ind2 = buffer_unicode_length(out, start) + ((first==1)?ind:0);
-            level_foreach(vl, v, _) 
+            level_foreach(vl, v, _)
                 bprintf(out, "%S%v\n", second++?ind2:0, compress_fat_strings(v));
         }
     }
     return out;
 }
-

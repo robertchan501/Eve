@@ -3,7 +3,6 @@
 #include <unix/unix.h>
 #include <types.h>
 
-
 u64 key_of(value);
 boolean equals(value, value);
 
@@ -32,7 +31,7 @@ typedef struct block {
     heap h;
     execf head;
     int regs;
-    table scopes; 
+    table scopes;
     bag default_write;
     vector default_read;
     object *objects;
@@ -54,6 +53,7 @@ struct bag {
     preparer prepare;
     table listeners;
     ticks last_commit;
+    vector parents;
 };
 
 #include <edb.h>

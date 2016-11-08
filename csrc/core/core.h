@@ -45,17 +45,13 @@ typedef struct buffer *buffer;
 
 extern int ffsll(long long value);
 
-
-
-extern int ffsll(long long value);
-
-
 // (__length % 8) == 0
 // destructively modifies the set
-// not clear this is the same as the FD_SET ordering
+// ok, darwin fd_set is 32 bit little, which is not the same as 64 bit little
+// big doesn't care about word size
+
 #define foreach_bit(__base, __length, __i)\
     for (u64 __z = 0, *__ub = (u64 *)(void *)(__base); __z < (__length >> 6); __z++) \
         for (u64 __d, __i;\
              __d = ffsll(*(__ub + __z)), __i = (__d-1) + (64 * __z), __d;\
              *(__ub + __z) &=~(1ull<<(__d -1)))
-                                        

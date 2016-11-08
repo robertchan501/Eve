@@ -8,13 +8,17 @@ typedef struct variable {
     vector objects;
 } *variable;
 
+
+typedef closure cardinality_handler(u64 count);
+typedef closure checker(variable v, registers r);
+
 typedef struct object {
     variable self;
     vector attributes;
     multibag scopes;
-    // synch cardino, asynch burpo
-    u64 (*cardino)();
-    void (*)burpo))(vector terms, registers);
+    checker check;
+    void (*cardinality)(object obj, variable v, cardinality_handler);
+    void (*produce)(block bk, object obj, registers, variable v);
 } *object;
 
 typedef struct attribute {
@@ -24,34 +28,54 @@ typedef struct attribute {
 } *attributes;
 
 
+static void produce_result(object producer, block bk, registers r, variable v)
+{
+    vector_foreach(v->objects, i) {
+        object obj = i;
+        if (i != producer) {
+            // this check can be cheaper than the generic cardinality report
+            if (!obj->cardinality(obj, v, r)) return;
+        }
+    }
+    generic_join_step(bk, r);
+}
+
+
+
+// synchronous today - one variable only, i think there
+// are some other interesting possibilities
+static void edb_produce(object obj, registers r, variable v, proudction_result result)
+{
+    if (bound(r, obj->self)) {
+    } else {
+    }
+    apply(result);
+}
+
 // if i asked you my object, right now, given whats already bound, what
 // the worst case estimate of the card of V is
-static int object_cardinality(multibag scopes, object obj, registers r, variable v)
+static void generic_join_step(block bk, registers r)
 {
     // think about a multi-attribute join decision
-    // here we are selecting 
-    u64 min = -1ull;
-    foreach(obj->attributes, a) {
-        u64 n;
-        variable best;
-        
-        if (a->free) {
-            if (!bound(r, a->free)){
-                if ((n = multibag_cardinality(s_eAv, 0, a->name, 0))) {
-                    /* if we have all the scopes in hand, its worth
-                     * querying here against the bound values
-                     * to get a better cardinality estimate 
-                     */
-                    if (n < min) {
-                        best = v->attribute;
-                        min = n;
-                    }
-                }
+    // here we are selecting
+    u64 variable_set = -1ull;
+    object lowest_object;
+    variable lowest_variable;
+    u64 min_cost = -1ull;
+
+    foreach_bit(variable_set, 64, i) {
+        variable v = bk->variables[i]->objects;
+        vector_foreach(v->objects, obj) {
+            u64 cost = object_variable_cost(obj, v, r);
+            if (n < min) {
+                best = v->attribute;
+                min = n;
             }
         }
     }
-    *v = best;
-    return min;
+
+    object->produce(bk, obj, r) {
+    }
 }
 
 static int object_production(object obj, registers r, variable v, execf next)
@@ -95,6 +119,6 @@ block build_hypergraph(edb h, uuid e)
 {
 
     edb_foreach_av(e, ) {
-        
+
     }
 }
