@@ -39,7 +39,7 @@ static inline void encode_integer(int offset, byte base, u64 value)
 }
 
 
-static void write_string(char *body, int length)
+static void write_string(byte *body, int length)
 {
     encode_integer(2, 0x40, length);
     owrite(body, length);
@@ -49,7 +49,7 @@ extern char *pathroot;
 
 void *memcpy(void * dst, const void *src, size_t n);
 
-static void include_file(char *name, int length)
+static void include_file(byte *name, int length)
 {
     struct stat st;
     char err[]= "file not found ";
@@ -82,7 +82,7 @@ void *memset(void *b, int c, size_t len);
 static u64 uuid_count;
 
 // we can start trying to use the proper serializer
-static void write_term(char *x, int length)
+static void write_term(byte *x, int length)
 {
     char start = x[0];
 
@@ -132,7 +132,7 @@ int main()
 
     int fill = 0;
     int comment = 0;
-    char term[1024];
+    byte term[1024];
     char x;
 
     working = allocate_rolling(smallpages, sstring("package"));

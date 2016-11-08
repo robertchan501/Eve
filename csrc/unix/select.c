@@ -18,8 +18,6 @@ void register_write_handler(selector s, descriptor d, thunk t)
     table_set(s->write_handlers, (void *)(unsigned long)d, t);
 }
 
-extern int ffsll(long long value);
-
 static void scan_table(fd_set *t, table f)
 {
     u64 *b = (void *)t;

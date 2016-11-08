@@ -84,12 +84,12 @@ static void websocket_input_frame(websocket w, buffer b, register_read reg)
 
         if (length == 126) {
             if (rlen < 4) goto end;
-            length = htons(*(u16 *)bref(w->reassembly, 2));
+            length = hton_16(*(u16 *)bref(w->reassembly, 2));
             offset += 2;
         } else {
             if (length == 127) {
                 if (rlen< 10) goto end;
-                length = htonll(*(u64 *)bref(w->reassembly, 2));
+                length = hton_64(*(u64 *)bref(w->reassembly, 2));
                 offset += 8;
             }
         }

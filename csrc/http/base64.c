@@ -12,7 +12,7 @@ string base64_encode(heap h, buffer x)
     while(length > 0) {
         u32 triple = 0;
         memcpy(&triple, bref(x, bcount), (length<3?length:3));
-        triple = htonl(triple);
+        triple = hton_32(triple);
         triple >>= 8;
         bcount += 3;
 

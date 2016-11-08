@@ -110,7 +110,7 @@ static inline void move(buffer d, buffer s, u64 length)
 static value intern_float(void *x) 
 {
     u64 k = *(u64 *)x;
-    k = htonll(k);
+    k = hton_64(k);
     return box_float(*(double *)&k);
 }
 
@@ -130,15 +130,16 @@ static void deserialize_input(deserialize d, buffer b, thunk finished)
                 // should be quite small here, and there are ways to shortcut this if
                 // there is a really a problem. just trying to avoid expanding partial
                 // and copying b just for a lousy length field
-            if (b)
+            if (b) {
                 if (d->translate) {
                     // off by the type header?
                     // for long objects it would be nice if they could be discontiguous
                     // if they are about to be copied anywyas
                     move(d->partial, b, d->length - buffer_length(b));
+                } else {
+                    move(d->partial, b, 1);
                 }
-                else move(d->partial, b, 1);
-
+            }
         } else {
             d->partial = b;
             b = 0;

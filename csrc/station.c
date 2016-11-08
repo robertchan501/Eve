@@ -5,7 +5,7 @@ heap station_region, station_heap;
 
 station create_station(unsigned int address, unsigned short port) {
     void *a = allocate(station_heap, 6);
-    unsigned short p = htons(port);
+    unsigned short p = hton_16(port);
     memset(a, 0, 6);
     memcpy (a+4, &p, 2);
     return(a);

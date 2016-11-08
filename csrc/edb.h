@@ -1,4 +1,3 @@
-typedef struct edb *edb;
 
 typedef struct level {
     // actually, this is redundant with the table count,

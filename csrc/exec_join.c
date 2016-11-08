@@ -5,18 +5,16 @@ typedef value *registers;
 typedef struct variable {
     estring name;
     register dest;
-    vector constraints;
+    vector objects;
 } *variable;
 
-typedef struct constraint {
-    estring name;
-    register dest;
-} *constraint;
-
 typedef struct object {
-    variable self; // there is always a variable with this object id in the current model, even if we are just 'joining through'
+    variable self;
     vector attributes;
     multibag scopes;
+    // synch cardino, asynch burpo
+    u64 (*cardino)();
+    void (*)burpo))(vector terms, registers);
 } *object;
 
 typedef struct attribute {
@@ -26,7 +24,9 @@ typedef struct attribute {
 } *attributes;
 
 
-static int object_cardinality(multibag scopes, object obj, registers r, variable *v)
+// if i asked you my object, right now, given whats already bound, what
+// the worst case estimate of the card of V is
+static int object_cardinality(multibag scopes, object obj, registers r, variable v)
 {
     // think about a multi-attribute join decision
     // here we are selecting 
@@ -36,7 +36,7 @@ static int object_cardinality(multibag scopes, object obj, registers r, variable
         variable best;
         
         if (a->free) {
-            if (lookup(r, a->free) == empty_value) {
+            if (!bound(r, a->free)){
                 if ((n = multibag_cardinality(s_eAv, 0, a->name, 0))) {
                     /* if we have all the scopes in hand, its worth
                      * querying here against the bound values

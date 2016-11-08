@@ -62,6 +62,13 @@
 %split output result
 %split cardinality expansive
 
+%sum name sum
+%sum optional-argument by
+%sum optional-set-argument given
+%split argument to
+%split output result
+%split cardinality expansive
+
 
 
 #
@@ -94,7 +101,7 @@
 %bobname name name
 %bobname value %bobnamevar
 %bobnamevar register 2
-%bobject attribute %bobname
+%bobject attribute %bobspouse
 %bobspouse name spouse
 %bobspouse value %salvar
 

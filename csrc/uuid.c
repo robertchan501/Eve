@@ -71,7 +71,7 @@ uuid generate_uuid()
     // top bit has to be clear for serialization
     void *result = allocate(uuid_heap, UUID_LENGTH);
     ticks z = now();
-    z = htonl(z);
+    z = hton_32(z);
     memcpy(result, &z, 8);
     *((unsigned short *)result + 4) = count++;
     unsigned char *y = result;

@@ -63,8 +63,6 @@ bag staticdb()
     edb e = create_edb(init, 0);
     buffer_handler n = deserialize_into_bag(init, e);
     apply(n, wrap_buffer(init, &db_start, ((u64)&db_end) - ((u64)&db_start)), ignore);
-    buffer dumpy = edb_dump(init, e);
-    write(1, bref(dumpy, 0), buffer_length(dumpy));
 
     edb_foreach_e(e, id, sym(tag), sym(evaluation)){
         buffer test = edb_dump_dot(e, id);
@@ -361,3 +359,5 @@ buffer read_file_or_exit(heap h, char *path)
         exit(1);
     }
 }
+
+

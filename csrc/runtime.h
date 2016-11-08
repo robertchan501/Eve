@@ -35,12 +35,12 @@ typedef struct block {
     table scopes; 
     bag default_write;
     vector default_read;
-    vector variables;
+    object *objects;
+    variable *variables;
     uuid id;
 } *block;
 
 typedef struct edb *edb;
-
 typedef closure(commit, boolean);
 // if prepared is false then commit doens't have to be anything
 typedef closure(commit_handler, commit, boolean);
@@ -56,6 +56,10 @@ struct bag {
     ticks last_commit;
 };
 
+#include <edb.h>
+#include <multibag.h>
+
+
 
 #define def(__s, __v, __i)  table_set(__s, intern_string((unsigned char *)__v, cstring_length((char *)__v)), __i);
 
@@ -69,9 +73,6 @@ static value compress_fat_strings(value v)
     }
     return v;
 }
-
-#include <edb.h>
-#include <multibag.h>
 
 
 typedef closure(error_handler, char *, bag, uuid);

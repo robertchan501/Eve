@@ -169,3 +169,6 @@ void block_close(block bk)
     destroy(bk->h);
 }
 
+block build_block(edb e, uuid u)
+{
+}

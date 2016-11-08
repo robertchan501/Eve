@@ -218,10 +218,10 @@ static string dump_dot_internal(heap h, int *count, buffer dest, table visited, 
         edb_foreach_av(b, n, a, v) {
             if (type_of(v) == uuid_space) {
                 string target = dump_dot_internal(h, count, dest, visited, b, v);
-                bprintf(dest, "%b -> %b label=[\"%r\"]\n", tag, target, a);
-            } else bprintf(desc, "%v:%v\n", a, v);
+                bprintf(dest, "%b -> %b [label=\"%r\"]\n", tag, target, a);
+            } else bprintf(desc, "%r:%r\\n", a, v);
         }
-        bprintf(dest, "%b label[\"%b\"]\n", tag, desc);
+        bprintf(dest, "%b [label = \"%b\"]\n", tag, desc);
     }
     return tag;
 }

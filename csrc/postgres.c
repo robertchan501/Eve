@@ -63,7 +63,7 @@ static void pg_send_message(postgres p, buffer b)
 {
     u32 len = buffer_length(b);
     b->start = 0;
-    *((u32 *)bref(b, 1)) = htonl(len + 4);
+    *((u32 *)bref(b, 1)) = hton_32(len + 4);
     apply(p->e->w, b, ignore);
 }
 
@@ -344,7 +344,7 @@ static void postgres_connected(postgres p, endpoint e)
     pg_concat_estring(b, sym(database));
     pg_concat_estring(b, p->database);
     buffer_write_byte(b, 0);
-    *(u32 *)bref(b, 0) = htonl(buffer_length(b));
+    *(u32 *)bref(b, 0) = hton_32(buffer_length(b));
     p->self = cont(p->h, postgres_input, p);
     apply(e->w, b, ignore);
     apply(e->r, p->self);
