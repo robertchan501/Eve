@@ -1,7 +1,6 @@
-
 typedef struct level {
-    // actually, this is redundant with the table count,
-    // but lets keep using this abstraction
+    // this is the count of all of the leaves under this node,
+    // the table entry count is the number of immediate children
     u64 count;
     table entries;
 } *level;
@@ -81,7 +80,7 @@ void destroy_bag(bag b);
     level_foreach((__b)->eav, __e, __avl) \
     level_foreach(__avl, __a, __vl)\
     level_foreach(__vl, __v, __cv)\
-    for(uuid __block_id = ((leaf)__cv)->block_id , __p = 0; !__p; __p++)    
+    for(uuid __block_id = ((leaf)__cv)->block_id , __p = 0; !__p; __p++)
 
 long count_of(edb b, value e, value a, value v);
 edb create_edb(heap, vector inherits);

@@ -5,15 +5,15 @@ typedef value *registers;
 typedef struct variable {
     estring name;
     register dest;
-    vector objects;
+    vector attributes; // an attribute is specific to an object
 } *variable;
 
 
 typedef closure cardinality_handler(u64 count);
 typedef closure checker(variable v, registers r);
 
+// need an attribute name for entity
 typedef struct object {
-    variable self;
     vector attributes;
     multibag scopes;
     checker check;
@@ -23,31 +23,51 @@ typedef struct object {
 
 typedef struct attribute {
     estring name;
-    variable free; // avoiding dynamic typing
+    // avoiding additional dynamic typing, either free or v is true
+    variable free;
     value v;
+    object v;
 } *attributes;
 
 
-static void produce_result(object producer, block bk, registers r, variable v)
+// sum up the contributed cardinalities of variable v given what we
+// know so far. to avoid collecting and storing the intermediate, we
+// compute the sum of each of the contributing bags, which is greater
+// than or equal to the actual result
+//
+// xxx - also, we can potentially count child bags more than once
+// if they are included more than one transitively. if bag inclusion
+// is static (?) we can cull these
+
+static u64 bag_cardinality(bag b, object obj, register r, variable v)
 {
-    vector_foreach(v->objects, i) {
-        object obj = i;
-        if (i != producer) {
-            // this check can be cheaper than the generic cardinality report
-            if (!obj->cardinality(obj, v, r)) return;
-        }
-    }
-    generic_join_step(bk, r);
+    u64 result = 0;
+
+    result += b->proposal();
+    vector_foreach(b->parents, p)
+        result += bag_cardinality(p, obj, r, v);
+    return result;
 }
 
 
-
-// synchronous today - one variable only, i think there
-// are some other interesting possibilities
-static void edb_produce(object obj, registers r, variable v, proudction_result result)
+typedef closure (production, value);
+// need completion here
+CONTINUATION_1_1(bag_produce, table, value);
+static void bag_produce(table results, value x, produce p)
 {
-    if (bound(r, obj->self)) {
-    } else {
+    vector_foreach(b->parents, p)
+        value_table_set(results, x, (void *)1);
+}
+
+static void bag_produce(bag b, object obj, registers r, variable v, production result)
+{
+    // actually perform a union
+    table results = create_value_table(transient);
+    p = cont(transient, bag_combine, results);
+
+    vector_foreach(b->parents, p) {
+        bag b = (bag)p;
+        p->produce(p, obj, r, v, result);
     }
     apply(result);
 }

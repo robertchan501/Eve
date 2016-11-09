@@ -27,6 +27,9 @@ void bbprintf(string b, string fmt, ...);
 typedef closure(execf, heap, value *);
 typedef closure(flushf);
 
+typedef struct object *object;
+typedef struct variable *variable;
+
 typedef struct block {
     heap h;
     execf head;
@@ -47,6 +50,7 @@ typedef closure(commit_handler, commit, boolean);
 typedef closure(preparer, edb, edb, ticks, commit_handler);
 typedef closure(listener, value, value, value, uuid);
 typedef closure(scanner, int, listener, value, value, value);
+typedef closure(production_handler);
 
 struct bag {
     scanner scan;
@@ -54,6 +58,8 @@ struct bag {
     table listeners;
     ticks last_commit;
     vector parents;
+    u64 (*cardinality)(bag b, object obj, registers, attribute);
+    void4 (*produce)(bag b, object obj, attribute a, production_handler p);
 };
 
 #include <edb.h>

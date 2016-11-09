@@ -239,21 +239,36 @@ string edb_dump_dot(edb s, uuid u)
 }
 
 
-static void edb_produce(edb e, register r, variable v)
+static void edb_produce(edb e, register r, attribute a)
 {
+    if (bound(r, obj->self)) {
+        level al = level_find(b->eav, lookup(r, v));
+        if (al) {
+            level vl = level_find(al, a->name);
+            if (vl) return vl->count;
+        }
+    } else {
+        level al = level_find(b->ave, a->name);
+        if (al) return al->count;
+    }
 
 }
 
-static u64 edb_cardinality(edb b, object obj, variable v)
+static u64 edb_cardinality(edb b, object obj, registers r, attribute a)
 {
     if (bound(r, obj->self)) {
-
+        // the early intersection check is supposed to throw these out,
+        // but lets ignore the early intersection check
+        level al = level_find(b->eav, lookup(r, v));
+        if (al) {
+            level vl = level_find(al, a->name);
+            if (vl) return vl->count;
+        }
     } else {
-        vector_foreach() {
-        }
-        vector_foreach(b) {
-        }
+        level al = level_find(b->ave, a->name);
+        if (al) return al->count;
     }
+    return 0;
 }
 
 string edb_dump(heap h, edb b)
