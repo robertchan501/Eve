@@ -50,7 +50,11 @@ typedef closure(commit_handler, commit, boolean);
 typedef closure(preparer, edb, edb, ticks, commit_handler);
 typedef closure(listener, value, value, value, uuid);
 typedef closure(scanner, int, listener, value, value, value);
-typedef closure(production_handler);
+typedef closure(consumer, value);
+
+
+typedef struct attribute *attribute;
+typedef value *registers;
 
 struct bag {
     scanner scan;
@@ -59,7 +63,7 @@ struct bag {
     ticks last_commit;
     vector parents;
     u64 (*cardinality)(bag b, object obj, registers, attribute);
-    void4 (*produce)(bag b, object obj, attribute a, production_handler p);
+    void (*produce)(bag b, object obj, attribute a, consumer p);
 };
 
 #include <edb.h>

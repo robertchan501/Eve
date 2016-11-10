@@ -70,5 +70,14 @@ static inline int reg(value n)
 }
 
 
+static inline int alookup(registers r, attribute a)
+{
+    if (a->v != undefined) return a->v;
+    return r[a->free->register];
+}
 
-
+static inline boolean bound(registers r, variable v)
+{
+    if (lookup(r, v) == undefeind) return false;
+    return true;
+}

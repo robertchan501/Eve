@@ -1,10 +1,9 @@
 #include <runtime.h>
 
-typedef value *registers;
 
 typedef struct variable {
     estring name;
-    register dest;
+    int register;
     vector attributes; // an attribute is specific to an object
 } *variable;
 

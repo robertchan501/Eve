@@ -239,7 +239,7 @@ string edb_dump_dot(edb s, uuid u)
 }
 
 
-static void edb_produce(edb e, register r, attribute a)
+static void edb_produce(edb e, registers r, attribute a)
 {
     if (bound(r, obj->self)) {
         level al = level_find(b->eav, lookup(r, v));
