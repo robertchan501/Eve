@@ -68,6 +68,7 @@ static void rolling_destroy(heap h)
 }
 
 // where heap p must be aligned
+// xxx - should this be an interned string?
 heap allocate_rolling(heap p, buffer name)
 {
     int off = sizeof(struct pageheader) +  sizeof(struct rolling);

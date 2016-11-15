@@ -32,7 +32,7 @@ static inline estring lookup_string(value *r, value k)
     return intern_buffer(out);
 }
 
-static inline void extract(vector dest, vector keys, value *r)
+static inline void extract(vector dest, vector keys, registers r)
 {
     for (int i = 0; i< vector_length(keys); i ++) {
         vector_set(dest, i, lookup(r, vector_get(keys, i)));
@@ -70,14 +70,42 @@ static inline int reg(value n)
 }
 
 
-static inline int alookup(registers r, attribute a)
+
+typedef struct variable {
+    estring name;
+    int regnum;
+    vector attributes; // an attribute is specific to an object
+} *variable;
+
+
+typedef closure(cardinality_handler, u64);
+typedef closure(checker, variable, registers);
+
+// need an attribute name for entity
+typedef struct object {
+    table attributes;
+    multibag scopes;
+    checker check;
+    void (*cardinality)(object obj, variable v, cardinality_handler);
+    void (*produce)(block bk, object obj, registers, variable v);
+} *object;
+
+typedef struct attribute {
+    estring name;
+    // avoiding additional dynamic typing, either free or v is true
+    variable free;
+    value v;
+    object obj;
+} *attributes;
+
+static inline value alookup(registers r, attribute a)
 {
     if (a->v != undefined) return a->v;
-    return r[a->free->register];
+    return r[a->free->regnum];
 }
 
 static inline boolean bound(registers r, variable v)
 {
-    if (lookup(r, v) == undefeind) return false;
+    if (lookup(r, v) == undefined) return false;
     return true;
 }

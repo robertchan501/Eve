@@ -31,7 +31,7 @@ static inline void encode_integer(int offset, byte base, u64 value)
     total -= offset;
 
     while (total > 0) {
-        bwrite(out | ((total > space)?(1<<space):0) | extract(value, total, space));
+        bwrite(out | ((total > space)?(1<<space):0) | bitstring_extract(value, total, space));
         total -= space;
         space = 7;
         out = 0;
@@ -94,7 +94,7 @@ static void write_term(byte *x, int length)
             key = allocate(working, UUID_LENGTH);
             memset(key, 0, UUID_LENGTH);
             u64 id = uuid_count++;
-            id = htonll(id);
+            id = hton_64(id);
             memcpy(key+UUID_LENGTH-sizeof(u64), &id, sizeof(u64));
             key[0] |= 0x80;
             table_set(object_map, s, key);
@@ -107,7 +107,7 @@ static void write_term(byte *x, int length)
         double d = parse_float(alloca_wrap_buffer(x, length));
         bwrite(float64_prefix);
         u64 k = *(u64*)&d;
-        k = htonll(k);
+        k = hton_64(k);
         owrite((u8 *)&k, sizeof(double));
         return;
         // xxx - little endian

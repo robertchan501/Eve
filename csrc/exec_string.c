@@ -1,6 +1,4 @@
 #include <runtime.h>
-#include <exec.h>
-
 
 static void do_concat(execf n, value dest, vector terms, heap h, value *r)
 {

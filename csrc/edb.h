@@ -38,9 +38,9 @@ static inline value level_find_create(edb e, level current, value key) {
 #define level_find(_t, _k)\
     ({\
       void *x = 0 ;\
-      if (_t) x = value_table_find(((level)_t)->entries, _k);      \
+      if (_t) x = value_table_find(((level)_t)->entries, _k);\
       x;\
-     })
+    })
 
 
 // does this really need to return status?

@@ -26,7 +26,7 @@ static inline u64 mask(int x)
     return((1<<x) -1);
 }
 
-static inline byte extract(u64 source, int highest_start, int bits)
+static inline byte bitstring_extract(u64 source, int highest_start, int bits)
 {
     int x = highest_start - bits;
     if (x < 0) x = 0;

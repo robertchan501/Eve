@@ -95,12 +95,17 @@
 
 %eval tag evaluation
 %eval object %bobject
-%bobject variable %bobvar
-%bobvar register 0
+
+%bobject attribute %bobjectselfattr
+%bobjectselfattr name self
+%bobjectselfattr value %bobselfvar
+%bobselfvar register 0
+
 %bobject attribute %bobname
 %bobname name name
 %bobname value %bobnamevar
 %bobnamevar register 2
+
 %bobject attribute %bobspouse
 %bobspouse name spouse
 %bobspouse value %salvar
@@ -110,4 +115,9 @@
 %salvar register 1
 %salject attribute %salname
 %salname name name
+# this can't be the same because we cant decide whether something is an 
+# immediate object, or a descriptor which contains other information 
+# (i.e. the variable)
+# I guess we could add a value type in there
 %salname value sally
+

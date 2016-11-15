@@ -1,34 +1,5 @@
 #include <runtime.h>
 
-
-typedef struct variable {
-    estring name;
-    int register;
-    vector attributes; // an attribute is specific to an object
-} *variable;
-
-
-typedef closure cardinality_handler(u64 count);
-typedef closure checker(variable v, registers r);
-
-// need an attribute name for entity
-typedef struct object {
-    vector attributes;
-    multibag scopes;
-    checker check;
-    void (*cardinality)(object obj, variable v, cardinality_handler);
-    void (*produce)(block bk, object obj, registers, variable v);
-} *object;
-
-typedef struct attribute {
-    estring name;
-    // avoiding additional dynamic typing, either free or v is true
-    variable free;
-    value v;
-    object v;
-} *attributes;
-
-
 // sum up the contributed cardinalities of variable v given what we
 // know so far. to avoid collecting and storing the intermediate, we
 // compute the sum of each of the contributing bags, which is greater

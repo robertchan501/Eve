@@ -239,27 +239,32 @@ string edb_dump_dot(edb s, uuid u)
 }
 
 
-static void edb_produce(edb e, registers r, attribute a)
+// there is also a reasonable role for a probe here
+static void edb_produce(edb e, object obj, registers r, attribute a, consumer c)
 {
-    if (bound(r, obj->self)) {
-        level al = level_find(b->eav, lookup(r, v));
+    if (bound(r, object_attribute(obj, sym(self)))) {
+        level al = level_find(e->eav, lookup(r, a->name));
         if (al) {
             level vl = level_find(al, a->name);
-            if (vl) return vl->count;
+            level_foreach(vl, v, _) 
+                apply(c, v);
         }
     } else {
-        level al = level_find(b->ave, a->name);
-        if (al) return al->count;
+        level al = level_find(e->ave, a->name);
+        // xxx- i guess we aren't producing v here - i guess this is if we are looking for self?
+        level_foreach(al, v, vl) { 
+            level_foreach(vl, e, _) 
+                apply(c, e);
+        }
     }
-
 }
 
 static u64 edb_cardinality(edb b, object obj, registers r, attribute a)
 {
-    if (bound(r, obj->self)) {
+    if (bound(r, object_attribute(obj, sym(self)))) {
         // the early intersection check is supposed to throw these out,
         // but lets ignore the early intersection check
-        level al = level_find(b->eav, lookup(r, v));
+        level al = level_find(b->eav, lookup(r, a->name));
         if (al) {
             level vl = level_find(al, a->name);
             if (vl) return vl->count;

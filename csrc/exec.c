@@ -1,5 +1,4 @@
 #include <runtime.h>
-#include <exec.h>
 
 static CONTINUATION_2_2(do_sub_tail, value, vector, heap, value *);
 static void do_sub_tail(value resreg,
@@ -171,4 +170,12 @@ void block_close(block bk)
 
 block build_block(edb e, uuid u)
 {
+    heap h = allocate_rolling(pages, sstring("block"));
+    edb_foreach_v(e, u, sym("object"), obj) {
+        edb_foreach_v(e, obj, sym("attribute"), attr) {
+            attribute a = allocate(h, sizeof(struct attribute));
+            estring n = lookupv(e, attr, sym(name));
+            value k = lookupv(e, attr, sym(value));
+        }
+    }
 }

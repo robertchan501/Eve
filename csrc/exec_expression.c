@@ -1,6 +1,5 @@
 #include <runtime.h>
 #include <math.h>
-#include <exec.h>
 
 table functions;
 

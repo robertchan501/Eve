@@ -1,5 +1,4 @@
 #include <runtime.h>
-#include <exec.h>
 
 // leaf aggregator functions are still synchronous
 static table aggbuilders;

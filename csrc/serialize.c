@@ -20,7 +20,7 @@ static inline void encode_integer(buffer dest, int offset, byte base, u64 value)
     total -= offset;
 
     while (total > 0) {
-        buffer_write_byte(dest, out | ((total > space)?(1<<space):0) | extract(value, total, space));
+        buffer_write_byte(dest, out | ((total > space)?(1<<space):0) | bitstring_extract(value, total, space));
         total -= space;
         space = 7;
         out = 0;

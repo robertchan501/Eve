@@ -7,10 +7,11 @@ u64 key_of(value);
 boolean equals(value, value);
 
 typedef value eboolean;
+#define undefined ((void *)0)
+
 extern heap efence;
 
 void print(buffer, value);
-
 
 typedef struct bag *bag;
 
@@ -68,8 +69,6 @@ struct bag {
 
 #include <edb.h>
 #include <multibag.h>
-
-
 
 #define def(__s, __v, __i)  table_set(__s, intern_string((unsigned char *)__v, cstring_length((char *)__v)), __i);
 
@@ -149,3 +148,7 @@ bag timer_bag_init();
 station create_station(unsigned int address, unsigned short port);
 void init_station();
 extern heap station_heap;
+
+#include <exec.h>
+
+#define object_attribute(__obj, __x) (value_table_find(__obj->attributes, __x))
